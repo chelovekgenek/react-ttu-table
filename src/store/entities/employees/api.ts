@@ -1,1 +1,3 @@
-export const getAll = async () => console.log(process.env)
+import { request } from "helpers"
+
+export const getAll = async () => request.get("/api/employees")

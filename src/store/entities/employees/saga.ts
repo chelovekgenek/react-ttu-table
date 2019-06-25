@@ -1,11 +1,12 @@
-import { takeEvery, call } from "redux-saga/effects"
+import { takeEvery, call, put } from "redux-saga/effects"
 
 import * as api from "./api"
-import { E } from "./actions"
+import { E, successGetAll } from "./actions"
 
 function* handleGetAll() {
   try {
-    yield call(api.getAll)
+    const { data } = yield call(api.getAll)
+    yield put(successGetAll(data))
   } catch (e) {
     console.error(e)
   }
