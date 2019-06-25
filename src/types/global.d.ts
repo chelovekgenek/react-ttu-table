@@ -6,7 +6,7 @@ declare interface IReduxNormalizedDataState<T> {
 }
 
 interface IApiEntityEmployee {
-  id: string
+  id: number
   firstName: string
   lastName: string
   email: string

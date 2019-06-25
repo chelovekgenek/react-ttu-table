@@ -41,3 +41,26 @@ export const getColumns = (): Array<ColumnProps<IApiEntityEmployee>> => [
     sorter: (a, b) => a.totalHours - b.totalHours,
   },
 ]
+
+export const timeOptions = [
+  {
+    title: "All days",
+    value: "all days",
+  },
+  {
+    title: "Current day",
+    value: "current day",
+  },
+  {
+    title: "Prev 7 days",
+    value: "prev 7 days",
+  },
+  {
+    title: "Next 7 days",
+    value: "next 7 days",
+  },
+  {
+    title: "Current month",
+    value: "current month",
+  },
+]
