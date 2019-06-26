@@ -8,7 +8,7 @@ import { selectFetching, selectData } from "store/entities/employees"
 import { TAppState } from "store/entities"
 
 import { getColumns, timeOptions, ETimeOptions } from "./helpers"
-import { ContainerRow, ContentRow, SelectTimePeriodWrapper, SelectEmployeeWrapper } from "./MainLayout.styles"
+import { ContainerRow, ContentRow, SelectTimePeriod, SelectEmployee } from "./MainLayout.styles"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { saveFile } from "helpers"
 
@@ -26,8 +26,8 @@ interface IState {
   data: IProps["data"]
   filters: {
     months?: RangePickerValue
-    time?: string
-    employee?: number
+    time?: string | unknown
+    employee?: number | unknown
   }
 }
 
@@ -58,7 +58,7 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
               <h1>Staff Timecards</h1>
             </Row>
             <ContentRow type="flex" justify="space-between">
-              <Col span={14}>
+              <Col span={10}>
                 <Row type="flex" justify="space-between">
                   <RangePicker
                     allowClear
@@ -69,33 +69,29 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
                     onChange={this.handleMonthsChange}
                     onPanelChange={this.handleMonthsChange}
                   />
-                  <SelectTimePeriodWrapper>
-                    <Select value={filters.time} onChange={this.handleTimeChange} allowClear>
-                      {timeOptions.map(item => (
-                        <Option key={item.value} value={item.value}>
-                          {item.title}
-                        </Option>
-                      ))}
-                    </Select>
-                  </SelectTimePeriodWrapper>
-                  <SelectEmployeeWrapper>
-                    <Select
-                      showSearch
-                      allowClear
-                      placeholder="All employees"
-                      filterOption={(input, option) =>
-                        get(option, "props.children", "")
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                      }
-                      value={filters.employee}
-                      onChange={this.handleEmployeeChange}
-                    >
-                      {this.props.data.map(item => (
-                        <Option key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</Option>
-                      ))}
-                    </Select>
-                  </SelectEmployeeWrapper>
+                  <SelectTimePeriod value={filters.time} onChange={this.handleTimeChange} allowClear>
+                    {timeOptions.map(item => (
+                      <Option key={item.value} value={item.value}>
+                        {item.title}
+                      </Option>
+                    ))}
+                  </SelectTimePeriod>
+                  <SelectEmployee
+                    showSearch
+                    allowClear
+                    placeholder="All employees"
+                    filterOption={(input, option) =>
+                      get(option, "props.children", "")
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                    value={filters.employee}
+                    onChange={this.handleEmployeeChange}
+                  >
+                    {this.props.data.map(item => (
+                      <Option key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</Option>
+                    ))}
+                  </SelectEmployee>
                 </Row>
               </Col>
               <Col>
@@ -130,7 +126,7 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
       filters: { ...initialState.filters, months: v },
     }))
   }
-  handleTimeChange = (v: string) => {
+  handleTimeChange = (v: unknown) => {
     const { data } = this.state
     const set = (data: IProps["data"]) => this.setState(s => ({ data, filters: { ...initialState.filters, time: v } }))
     switch (v) {
@@ -152,17 +148,13 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
         set(data)
     }
   }
-  handleEmployeeChange = (v?: number) =>
+  handleEmployeeChange = (v: unknown) =>
     this.setState(s => ({
       data: v ? s.data.filter(item => item.id === v) : this.props.data,
       filters: { ...initialState.filters, employee: v },
     }))
 
-  handleExportClick = () => {
-    const { data } = this.state
-
-    saveFile("export.json", data)
-  }
+  handleExportClick = () => saveFile("export.json", this.state.data)
 }
 
 export default connect((state: TAppState) => ({
