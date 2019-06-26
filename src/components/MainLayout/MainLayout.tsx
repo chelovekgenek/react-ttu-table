@@ -92,20 +92,26 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
     )
   }
 
+  setDefaultState = () => this.setState({ data: this.props.data, filters: initialState.filters })
+
   handleMonthsChange = (v?: RangePickerValue) => {
-    if (!v) return
+    if (!v) return this.setDefaultState()
     const [from, to] = v
-    this.setState(s => ({
+    this.setState({
       data:
         from && to
-          ? s.data.filter(({ date }) => moment(date).isBetween(v[0] as Moment, v[1] as Moment))
+          ? this.props.data.filter(({ date }) => moment(date).isBetween(v[0] as Moment, v[1] as Moment))
           : this.props.data,
       filters: { ...initialState.filters, months: v },
-    }))
+    })
   }
   handleTimeChange = (v: unknown) => {
-    const { data } = this.state
-    const set = (data: IProps["data"]) => this.setState(s => ({ data, filters: { ...initialState.filters, time: v } }))
+    const { data } = this.props
+    if (!v) return this.setDefaultState()
+    const set = (data: IProps["data"]) => {
+      this.setState({ data, filters: { ...initialState.filters, time: v } })
+    }
+    const now = moment()
     switch (v) {
       case ETimeOptions.ALL_DAYS:
         return set(data)
@@ -116,20 +122,19 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
           data.filter(({ date }) => moment(date).isBetween(moment().startOf("month"), moment().endOf("month"))),
         )
       case ETimeOptions.NEXT_7_DAYS:
-        return set(data.filter(({ date }) => moment(date).isBetween(moment(), moment().add(7, "days"))))
+        return set(data.filter(({ date }) => moment(date).isBetween(now, moment().add(7, "days"))))
       case ETimeOptions.PREV_7_DAYS:
-        return set(
-          data.filter(({ date }) => moment(date).isBetween(moment().startOf("month"), moment().subtract(7, "days"))),
-        )
-      default:
-        set(data)
+        return set(data.filter(({ date }) => moment(date).isBetween(moment().subtract(7, "days"), now)))
     }
   }
-  handleEmployeeChange = (v: unknown) =>
-    this.setState(s => ({
-      data: v ? s.data.filter(item => item.id === v) : this.props.data,
+  handleEmployeeChange = (v: unknown) => {
+    const id = Number(v)
+    if (!id) return this.setDefaultState()
+    this.setState({
+      data: this.props.data.filter(item => item.id === id),
       filters: { ...initialState.filters, employee: v },
-    }))
+    })
+  }
 
   handleExportClick = () => saveFile("export.json", this.state.data)
 }

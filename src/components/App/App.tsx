@@ -11,7 +11,6 @@ export const App: React.FC = () => {
     <Provider store={store}>
       <GlobalStyles />
       <MainLayout />
-      <App />
     </Provider>
   )
 }
