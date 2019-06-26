@@ -1,15 +1,13 @@
 import React from "react"
 import { ColumnProps } from "antd/lib/table"
+import moment from "moment"
 
 export const getColumns = (): Array<ColumnProps<IApiEntityEmployee>> => [
   {
     title: "Date",
     key: "date",
-    render: (record: IApiEntityEmployee) => {
-      const d = new Date(Number(record.date) * 1000)
-      return <span>{`${d.getDay() + 1}/${d.getMonth() + 1}/${d.getFullYear()}`}</span>
-    },
-    sorter: (a, b) => Number(a.date) - Number(b.date),
+    render: (record: IApiEntityEmployee) => <span>{moment(record.date).format("DD/MM/YYYY")}</span>,
+    sorter: (a, b) => moment(a.date).valueOf() - moment(b.date).valueOf(),
   },
   {
     title: "Time In/Out",
@@ -42,25 +40,33 @@ export const getColumns = (): Array<ColumnProps<IApiEntityEmployee>> => [
   },
 ]
 
+export const ETimeOptions = {
+  ALL_DAYS: "all days",
+  CURR_DAY: "current day",
+  PREV_7_DAYS: "prev 7 days",
+  NEXT_7_DAYS: "next 7 days",
+  CURR_MONTH: "current month",
+}
+
 export const timeOptions = [
   {
     title: "All days",
-    value: "all days",
+    value: ETimeOptions.ALL_DAYS,
   },
   {
     title: "Current day",
-    value: "current day",
+    value: ETimeOptions.CURR_DAY,
   },
   {
     title: "Prev 7 days",
-    value: "prev 7 days",
+    value: ETimeOptions.PREV_7_DAYS,
   },
   {
     title: "Next 7 days",
-    value: "next 7 days",
+    value: ETimeOptions.NEXT_7_DAYS,
   },
   {
     title: "Current month",
-    value: "current month",
+    value: ETimeOptions.CURR_MONTH,
   },
 ]

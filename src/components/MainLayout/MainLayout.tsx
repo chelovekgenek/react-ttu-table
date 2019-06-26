@@ -1,12 +1,13 @@
 import React from "react"
 import { connect } from "react-redux"
 import { get } from "lodash"
+import moment, { Moment } from "moment"
 
 import { Table, Grid, Button, Select, DatePicker } from "components/UI"
 import { selectFetching, selectData } from "store/entities/employees"
 import { TAppState } from "store/entities"
 
-import { getColumns, timeOptions } from "./helpers"
+import { getColumns, timeOptions, ETimeOptions } from "./helpers"
 import { ContainerRow, ContentRow, SelectTimePeriodWrapper, SelectEmployeeWrapper } from "./MainLayout.styles"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { saveFile } from "helpers"
@@ -30,15 +31,17 @@ interface IState {
   }
 }
 
+const initialState = {
+  data: [],
+  filters: {
+    months: [],
+    time: timeOptions[0].value,
+    employee: undefined,
+  },
+}
+
 export class MainLayout extends React.PureComponent<IProps, IState> {
-  state: IState = {
-    data: [],
-    filters: {
-      months: [],
-      time: timeOptions[0].value,
-      employee: undefined,
-    },
-  }
+  state: IState = initialState
   UNSAFE_componentWillReceiveProps(nextProps: IProps) {
     this.setState({ data: nextProps.data })
   }
@@ -58,14 +61,16 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
               <Col span={14}>
                 <Row type="flex" justify="space-between">
                   <RangePicker
+                    allowClear
                     placeholder={["Start month", "End month"]}
                     format="MMM. YYYY"
                     mode={["month", "month"]}
                     value={filters.months}
-                    onPanelChange={this.setFilter("months")}
+                    onChange={this.handleMonthsChange}
+                    onPanelChange={this.handleMonthsChange}
                   />
                   <SelectTimePeriodWrapper>
-                    <Select value={filters.time} onChange={this.setFilter("time")}>
+                    <Select value={filters.time} onChange={this.handleTimeChange} allowClear>
                       {timeOptions.map(item => (
                         <Option key={item.value} value={item.value}>
                           {item.title}
@@ -114,13 +119,43 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
     )
   }
 
-  setFilter = (key: keyof IState["filters"]) => (v: any) =>
-    this.setState(s => ({ filters: { ...s.filters, [key]: v } }))
-
+  handleMonthsChange = (v?: RangePickerValue) => {
+    if (!v) return
+    const [from, to] = v
+    this.setState(s => ({
+      data:
+        from && to
+          ? s.data.filter(({ date }) => moment(date).isBetween(v[0] as Moment, v[1] as Moment))
+          : this.props.data,
+      filters: { ...initialState.filters, months: v },
+    }))
+  }
+  handleTimeChange = (v: string) => {
+    const { data } = this.state
+    const set = (data: IProps["data"]) => this.setState(s => ({ data, filters: { ...initialState.filters, time: v } }))
+    switch (v) {
+      case ETimeOptions.ALL_DAYS:
+        return set(data)
+      case ETimeOptions.CURR_DAY:
+        return set(data.filter(({ date }) => moment(date).isBetween(moment().startOf("day"), moment().endOf("day"))))
+      case ETimeOptions.CURR_MONTH:
+        return set(
+          data.filter(({ date }) => moment(date).isBetween(moment().startOf("month"), moment().endOf("month"))),
+        )
+      case ETimeOptions.NEXT_7_DAYS:
+        return set(data.filter(({ date }) => moment(date).isBetween(moment(), moment().add(7, "days"))))
+      case ETimeOptions.PREV_7_DAYS:
+        return set(
+          data.filter(({ date }) => moment(date).isBetween(moment().startOf("month"), moment().subtract(7, "days"))),
+        )
+      default:
+        set(data)
+    }
+  }
   handleEmployeeChange = (v?: number) =>
     this.setState(s => ({
       data: v ? s.data.filter(item => item.id === v) : this.props.data,
-      filters: { ...s.filters, employee: v },
+      filters: { ...initialState.filters, employee: v },
     }))
 
   handleExportClick = () => {
