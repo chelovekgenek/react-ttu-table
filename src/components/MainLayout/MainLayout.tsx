@@ -1,20 +1,18 @@
 import React from "react"
 import { connect } from "react-redux"
-import { get } from "lodash"
 import moment, { Moment } from "moment"
 
-import { Table, Grid, Button, Select, DatePicker } from "components/UI"
+import { Table, Grid, Button } from "components/UI"
 import { selectFetching, selectData } from "store/entities/employees"
 import { TAppState } from "store/entities"
 
 import { getColumns, timeOptions, ETimeOptions } from "./helpers"
-import { ContainerRow, ContentRow, SelectTimePeriod, SelectEmployee } from "./MainLayout.styles"
+import { ContainerRow, ContentRow } from "./MainLayout.styled"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { saveFile } from "helpers"
+import { Filters } from "./Filters"
 
 const { Col, Row } = Grid
-const { Option } = Select
-const { RangePicker } = DatePicker
 
 interface IStateProps {
   fetching: ReturnType<typeof selectFetching>
@@ -22,7 +20,7 @@ interface IStateProps {
 }
 interface IProps extends IStateProps {}
 
-interface IState {
+export interface IState {
   data: IProps["data"]
   filters: {
     months?: RangePickerValue
@@ -59,40 +57,19 @@ export class MainLayout extends React.PureComponent<IProps, IState> {
             </Row>
             <ContentRow type="flex" justify="space-between">
               <Col span={10}>
-                <Row type="flex" justify="space-between">
-                  <RangePicker
-                    allowClear
-                    placeholder={["Start month", "End month"]}
-                    format="MMM. YYYY"
-                    mode={["month", "month"]}
-                    value={filters.months}
-                    onChange={this.handleMonthsChange}
-                    onPanelChange={this.handleMonthsChange}
-                  />
-                  <SelectTimePeriod value={filters.time} onChange={this.handleTimeChange} allowClear>
-                    {timeOptions.map(item => (
-                      <Option key={item.value} value={item.value}>
-                        {item.title}
-                      </Option>
-                    ))}
-                  </SelectTimePeriod>
-                  <SelectEmployee
-                    showSearch
-                    allowClear
-                    placeholder="All employees"
-                    filterOption={(input, option) =>
-                      get(option, "props.children", "")
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                    }
-                    value={filters.employee}
-                    onChange={this.handleEmployeeChange}
-                  >
-                    {this.props.data.map(item => (
-                      <Option key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</Option>
-                    ))}
-                  </SelectEmployee>
-                </Row>
+                <Filters
+                  filters={filters}
+                  onMonthsChange={this.handleMonthsChange}
+                  onTimeChange={this.handleTimeChange}
+                  onEmployeeChange={this.handleEmployeeChange}
+                  options={{
+                    time: timeOptions,
+                    employee: this.props.data.map(item => ({
+                      children: `${item.firstName} ${item.lastName}`,
+                      value: String(item.id),
+                    })),
+                  }}
+                />
               </Col>
               <Col>
                 <Button icon="download" onClick={this.handleExportClick}>

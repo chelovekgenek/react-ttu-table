@@ -50,23 +50,23 @@ export const ETimeOptions = {
 
 export const timeOptions = [
   {
-    title: "All days",
+    children: "All days",
     value: ETimeOptions.ALL_DAYS,
   },
   {
-    title: "Current day",
+    children: "Current day",
     value: ETimeOptions.CURR_DAY,
   },
   {
-    title: "Prev 7 days",
+    children: "Prev 7 days",
     value: ETimeOptions.PREV_7_DAYS,
   },
   {
-    title: "Next 7 days",
+    children: "Next 7 days",
     value: ETimeOptions.NEXT_7_DAYS,
   },
   {
-    title: "Current month",
+    children: "Current month",
     value: ETimeOptions.CURR_MONTH,
   },
 ]
